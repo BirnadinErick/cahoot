@@ -1,5 +1,5 @@
 dev:
-	clang -o tahoot main.c -Werror -Wall -Wpedantic
+	clang -o tahoot main.c -Werror -Wall -Wpedantic -Wno-unused-label -Wno-unused-variable
 	./tahoot
 
 clean: 
