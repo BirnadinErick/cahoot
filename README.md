@@ -21,12 +21,20 @@ how much point the user got!
 
 Licensed under Apache 2.0
 
-## Techstack
+## Technologies Used
 
 - Sockets
 - TCP/IP
 - SCP (custom protocol, Simple Communication Protocol)
+- LLVM suite
 
-  ---
+## Development
 
-  Made in Deggendorf with 🍺 and 🥨.
+1. Install LLVM Suite: [Windows](https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/LLVM-19.1.0-win64.exe) 
+2. Install GNUMake: [Windows](https://sourceforge.net/projects/gnuwin32/)
+3. Clone the repo
+4. Run `make` to build and run the server
+
+---
+
+Made in Deggendorf with 🍺 and 🥨.
