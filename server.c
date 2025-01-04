@@ -1,19 +1,27 @@
 #include <arpa/inet.h>
+#include <assert.h>
 #include <netinet/in.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <time.h>
 #include <unistd.h>
+
+#include "tahoot_error.h"
+#include "ttime.h"
 
 #define PORT 6969
 #define BUFFER_SIZE 1024
 #define TRUE 1
 #define FALSE 0
+#define VERSION 1
 
 // global vars to gracefully shutdown the server
 int server_fd, new_socket;
+unsigned char players_no = 0;
+time_t game_start;
 
 void handle_shutdown(int sig) {
     puts("shutting down...");
@@ -30,6 +38,8 @@ void handle_shutdown(int sig) {
     puts("exit.");
     exit(EXIT_SUCCESS);
 }
+
+Error handle_question(char buffer, int sockfd);
 
 int main(void) {
     // variables initialization
@@ -81,6 +91,7 @@ int main(void) {
 
     printf("listening for new connections at %d.\n", PORT);
 
+    game_start = time(NULL);
     while (TRUE) {
         puts("w8ing for new connection...");
 
@@ -94,18 +105,34 @@ int main(void) {
         }
         puts("connection established with a client.");
 
-        send(new_socket, question, strlen(question), 0);
-        printf("Sent question: %s\n", question);
+        /* question answer protocol */
+        char qu_buffer[1];
 
-        int valread = read(new_socket, buffer, BUFFER_SIZE);
-        printf("Received answer: %s\n", buffer);
+        unsigned int BYTES_TO_READ = 1;
 
-        if (strcmp(buffer, "4") == 0) {
-            char *response = "Correct! You got 10 points.";
-            send(new_socket, response, strlen(response), 0);
+        int bytes_read = recv(new_socket, qu_buffer, BYTES_TO_READ, 0);
+        if (bytes_read < 0) {
+            perror("recv failed");
+        } else if (bytes_read == 0) {
+            puts("client disconnected.");
         } else {
-            char *response = "Incorrect answer.";
-            send(new_socket, response, strlen(response), 0);
+            // check question and payload; answer.
+            puts("handling the question");
+
+            players_no = 27;  // dev; remove later.
+
+            // few assertions to stay safe
+            assert(players_no <= 32);
+            switch (handle_question(qu_buffer[0], new_socket)) {
+                case OK:
+                    continue;
+                    break;  // failsafe incase continue did not work!
+                default: {
+                    perror("something went wrong");
+                    EXIT_STATUS = EXIT_FAILURE;
+                    goto exit;
+                }
+            }
         }
 
         close(new_socket);
@@ -114,4 +141,42 @@ int main(void) {
 exit:
     close(server_fd);
     exit(EXIT_STATUS);
+}
+
+Error handle_question(char qu, int sockfd) {
+    unsigned char version = (qu & 0xe0) >> 5;
+    if (version != VERSION) {
+        printf("version: %u\n", version);
+        puts("unsupported client.");
+        return VERSION_MISMATCH;
+    }
+
+    unsigned char qu_no = (qu & 0x1c) >> 2;
+    switch (qu_no) {
+        case 2: {
+            puts("checkup...");
+
+            unsigned char ans = VERSION << 5;
+            ans = ans | players_no;
+            int _res = send(sockfd, &ans, sizeof(ans), 0);
+            if (_res == -1) {
+                return NETZ_FAIL;
+            }
+
+            printf("time send is %lu\n", game_start);
+            switch (send_time(sockfd, game_start)) {
+                case OK:
+                    break;
+                default:
+                    return NETZ_FAIL;
+            }
+            break;
+        }
+        default: {
+            puts("unsupported question");
+            return UNKNOWN;
+        }
+    }
+
+    return OK;
 }
