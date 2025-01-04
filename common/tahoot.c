@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <time.h>
 
-#include "tahoot_error.h"
+#include "tahoot.h"
 
 Error send_time(int socket_fd, time_t _time) {
     uint64_t time_to_send = (uint64_t)_time;
@@ -12,9 +12,11 @@ Error send_time(int socket_fd, time_t _time) {
 
     int _res = send(socket_fd, &time_to_send, sizeof(time_to_send), 0);
     if (_res == -1) {
+        puts("did not send time!");
         return NETZ_FAIL;
     }
 
+    puts("sent time!");
     return OK;
 }
 

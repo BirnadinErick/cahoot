@@ -9,8 +9,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "tahoot_error.h"
-#include "ttime.h"
+#include "tahoot.h"
 
 #define PORT 6969
 #define BUFFER_SIZE 1024
