@@ -1,11 +1,23 @@
-#include "tahoot.h"
-
 #include <endian.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/socket.h>
 #include <time.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#endif
+
+#include "tahoot.h"
+
+#ifdef _WIN32
+typedef SOCKET socket_t;
+#else
+typedef int socket_t;
+#endif
 
 Error send_time(int socket_fd, time_t _time) {
     uint64_t time_to_send = (uint64_t)_time;
