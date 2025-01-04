@@ -1,10 +1,11 @@
+#include "tahoot.h"
+
 #include <endian.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <time.h>
-
-#include "tahoot.h"
 
 Error send_time(int socket_fd, time_t _time) {
     uint64_t time_to_send = (uint64_t)_time;
@@ -33,4 +34,38 @@ Error receive_time(int socket_fd, time_t* timeptr) {
     *timeptr = (time_t)received_time;
 
     return OK;
+}
+
+Question* get_next_question(uint8_t user_id) {
+    Question* quptr = (Question*)malloc(sizeof(Question));
+    char** ansgrpptr = (char**)malloc(sizeof(char*) * 4);
+    UserAnswer* _usransptr = (UserAnswer*)malloc(sizeof(UserAnswer));
+
+    if (quptr == NULL || ansgrpptr == NULL || _usransptr == NULL) {
+        return NULL;
+    }
+
+    // TODO: dev; swap with actual implementation later!
+
+    quptr->qu_id = 69;
+    quptr->qu_str = "Du brauchst mir nicht zu helfen.\0";
+
+    *(ansgrpptr) = "musst\0;";
+    *(ansgrpptr + 1) = "kannst\0;";
+    *(ansgrpptr + 2) = "willst\0;";
+    *(ansgrpptr + 3) = "darfst\0;";
+    quptr->ans_grp = ansgrpptr;
+
+    _usransptr->qu_id = 69;
+    _usransptr->answer_idx = UNINITVAL;
+    _usransptr->score = UNINITVAL;
+    quptr->usransptr = _usransptr;
+
+    // TODO: end of dev impl; replace later!
+    return quptr;
+}
+
+Bool check_user_answer(UserAnswer* answer) {
+    answer->score = 100;
+    return TRUE;
 }

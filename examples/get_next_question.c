@@ -1,8 +1,16 @@
+/*
+! NOTE that these are only examples, these won't compile here. to compile please
+! either link the libtahoot found in `common/` directory or copy past this into
+! configured directory.
+* scope: client scope (`client/client.c`)
+* desc: demonstrates how to use the library function to get the next quesiton
+*/
 #include <stdlib.h>
 
 #include "tahoot.h"
 
 int main(void) {
+    /* required parameter is the user_id;*/
     Question* qu = get_next_question((uint8_t)2003);
     if (qu == NULL) {
         perror("get_next_question failed!");
