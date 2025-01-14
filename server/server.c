@@ -21,6 +21,31 @@
 int server_fd, new_socket;
 unsigned char players_no = 0;
 time_t game_start;
+uint8_t NEXT_UID = 1;
+
+typedef struct {
+    User *user;
+    UserNode *next;
+} UserNode;
+
+UserNode *LAST_USERNODE = NULL;
+
+Error register_user(User *userref) {
+    UserNode *new_user = (UserNode *)malloc(sizeof(UserNode));
+    if (new_user == NULL) {
+        return MALLOCFAIL;
+    }
+
+    new_user->user = userref;
+    new_user->next = NULL;
+
+    if (LAST_USERNODE == NULL) {
+        LAST_USERNODE = new_user;
+    } else {
+        LAST_USERNODE->next = new_user;
+    }
+    return OK;
+}
 
 void handle_shutdown(int sig) {
     puts("shutting down...");
@@ -152,6 +177,27 @@ Error handle_question(char qu, int sockfd) {
 
     unsigned char qu_no = (qu & 0x1c) >> 2;
     switch (qu_no) {
+        case 1: {
+            puts("register new client...");
+            char *uname = (char *)malloc(256);
+            User *new_user = (User *)malloc(sizeof(User));
+            if (uname == NULL || new_user == NULL) {
+                puts("failed to allocate new memory!");
+            }
+
+            if (create_user(uname, new_user, &NEXT_UID) != OK &&
+                register_user(new_user) != OK) {
+                puts("something went wrong");
+                break;
+            }
+
+            puts("new client registered!");
+            printf("latest uid %d\n", new_user->uid);
+
+            unsigned char ans = VERSION << 5;
+            ans = ans | new_user->uid;
+            break;
+        }
         case 2: {
             puts("checkup...");
 

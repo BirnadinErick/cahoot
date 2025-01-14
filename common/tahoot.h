@@ -7,7 +7,14 @@
 #include <time.h>
 
 /* Descriptive Error Type */
-typedef enum { OK = 0, NETZ_FAIL, UNKNOWN, VERSION_MISMATCH, UNINITVAL } Error;
+typedef enum {
+    OK = 0,
+    NETZ_FAIL,
+    UNKNOWN,
+    VERSION_MISMATCH,
+    UNINITVAL,
+    MALLOCFAIL
+} Error;
 
 /* own boolean contructs.*/
 typedef enum { TRUE = 0, FALSE } Bool;
@@ -68,3 +75,18 @@ if false is returned but the score is either -ve or 0, then the answer was
 wrong!
 */
 Bool check_user_answer(UserAnswer* answer);
+
+/*
+ * user storage in server-side
+ */
+typedef struct {
+    char* uname;    // display name of the user
+    uint8_t uid;    // unique id for the user
+    uint8_t score;  // score of the user
+} User;
+
+// creates a new user
+Error create_user(char* uname, User* userref, uint8_t* nextuid);
+
+// request server to register new user
+Error request_register(char* uname);
