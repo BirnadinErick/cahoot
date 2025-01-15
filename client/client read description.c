@@ -7,7 +7,7 @@ int main() {
 	int PlayerScore = 0;
 	int quizComplete = 0;
 
-	while (!quizComplete)
+	while (!quizComplete)	//When quizComplete is 0 (quiz not complete), !quizComplete is 1, and the loop runs.
 		PlayerScore = 0;
 
 	printf("Which of the two quizes would you like to take?");
