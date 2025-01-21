@@ -18,7 +18,7 @@ int checkAnswer(char answer, char ref_answer, uint8_t playerCurrScore) {
     }
 
     printf("correct answer!");
-    return playerCurrScore++;
+    return playerCurrScore + 1;
 }
 
 uint8_t geographyQuiz(uint8_t playerScore) {
@@ -108,14 +108,14 @@ uint8_t germanQuiz(uint8_t playerScore) {
 int main() {
     char testSubject, Answer;
     uint8_t PlayerScore;
-    char Quizover = '1';
+    int Quizover = 1;
     char playerName[MAXUSERNAME];
     char playerNames[maxPLayers][MAXUSERNAME];
     int playerScores[maxPLayers];
     int playerCount = 0;
     Player players[32];
 
-    while (Quizover == '1') {
+    while (Quizover) {
         uint8_t playerScore = 0;
 
         printf("\nPlease enter your name: ");
