@@ -110,8 +110,6 @@ int main() {
     uint8_t PlayerScore;
     int Quizover = 1;
     char playerName[MAXUSERNAME];
-    char playerNames[maxPLayers][MAXUSERNAME];
-    int playerScores[maxPLayers];
     int playerCount = 0;
     Player players[32];
 
@@ -147,10 +145,6 @@ int main() {
         Player _player = {.name = name, .score = playerScore};
         players[playerCount] = _player;
 
-        strcpy_s(playerNames[playerCount], MAXUSERNAME, playerName);
-        playerScores[playerCount] = playerScore;
-        playerCount++;
-
         printf("\nDo you want to end the quiz? (1 for Yes, 0 for No): ");
         scanf_s("%d", &Quizover);
     }
@@ -158,10 +152,6 @@ int main() {
     printf("\nFinal Results:\n");
     for (int i = 0; i < playerCount; i++) {
         printf("Player: %s, Score: %d/5\n", players[i].name, players[i].score);
-    }
-
-    for (int i = 0; i < playerCount; i++) {
-        printf("Player: %s, Score: %d/5\n", playerNames[i], playerScores[i]);
     }
 
     return 0;
