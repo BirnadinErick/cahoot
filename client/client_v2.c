@@ -1,3 +1,10 @@
+/*
+ * Cahoot: Kahoot but with C
+ * Participants: Palpasa, Zaki, Birnadin E, Shourya (proper names are CC-d with the email)
+ * 
+ * compile and run the executable. Follow the instructions given i the screen
+*/
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +18,7 @@ typedef struct {
     uint8_t score;
 } Player;
 
+// checks whether user given answer is reference answer or not.
 int checkAnswer(char answer, char ref_answer, uint8_t playerCurrScore) {
     if (answer != ref_answer) {
         printf("Wrong answer dummy");
@@ -21,6 +29,7 @@ int checkAnswer(char answer, char ref_answer, uint8_t playerCurrScore) {
     return playerCurrScore + 1;
 }
 
+// just to keep the code organized.
 uint8_t geographyQuiz(uint8_t playerScore) {
     char Answer = 'x';
 
@@ -59,6 +68,7 @@ uint8_t geographyQuiz(uint8_t playerScore) {
     return playerScore;
 }
 
+// just to keep the code organized.
 uint8_t germanQuiz(uint8_t playerScore) {
     char Answer = 'x';
 
@@ -106,12 +116,11 @@ uint8_t germanQuiz(uint8_t playerScore) {
 }
 
 int main() {
-    char testSubject, Answer;
-    uint8_t PlayerScore;
-    int Quizover = 0;
-    char playerName[MAXUSERNAME];
+    // dump-away variables
+    char testSubject, Answer; uint8_t PlayerScore; char playerName[MAXUSERNAME];
+    int Quizover = 0; // flag to terminate the main loop or not
     int playerCount = 0;
-    Player players[32];
+    Player players[32]; // players container. Max player allowed is 32. 
 
     while (!Quizover) {
         uint8_t playerScore = 0;
@@ -140,8 +149,9 @@ int main() {
             goto quiz_start;
         }
 
+        // so we create a local memoery space for the player
         char* name = (char*)malloc(sizeof(char) * MAXUSERNAME);
-        strcpy_s(name, MAXUSERNAME, playerName);
+        strcpy_s(name, MAXUSERNAME, playerName); // copy the name to heap and store the reference in the stack
         Player _player = {.name = name, .score = playerScore};
         players[playerCount] = _player;
         playerCount++;
