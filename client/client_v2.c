@@ -6,6 +6,11 @@
 #define MAXUSERNAME 50
 #define maxPLayers 100
 
+typedef struct {
+    char* name;
+    uint8_t score;
+} Player;
+
 int checkAnswer(char answer, char ref_answer, uint8_t playerCurrScore) {
     if (answer != ref_answer) {
         printf("Wrong answer dummy");
@@ -108,6 +113,7 @@ int main() {
     char playerNames[maxPLayers][MAXUSERNAME];
     int playerScores[maxPLayers];
     int playerCount = 0;
+    Player players[32];
 
     while (Quizover == '1') {
         uint8_t playerScore = 0;
@@ -116,7 +122,7 @@ int main() {
         scanf_s("%s", playerName, MAXUSERNAME);
 
         printf("Hello %s, which of the two quizzes would you like to take?",
-            playerName);
+               playerName);
     quiz_start:
         puts("For a German quiz, please enter the character 'G'");
         puts("For a Geography quiz please enter the character 'E'");
@@ -129,32 +135,34 @@ int main() {
 
         if (testSubject == 'G' || testSubject == 'g') {
             playerScore = germanQuiz(playerScore);
-        }
-        else if (testSubject == 'E' || testSubject == 'e') {
+        } else if (testSubject == 'E' || testSubject == 'e') {
             playerScore = geographyQuiz(playerScore);
-        }
-        else {
+        } else {
             puts(" **You have entered invalid data**, reenter!.");
             goto quiz_start;
         }
 
-        
-                strcpy_s(playerNames[playerCount], MAXUSERNAME, playerName);
-                playerScores[playerCount] = playerScore;
-                playerCount++;
+        char* name = (char*)malloc(sizeof(char) * MAXUSERNAME);
+        strcpy_s(name, MAXUSERNAME, playerName);
+        Player _player = {.name = name, .score = playerScore};
+        players[playerCount] = _player;
 
-
+        strcpy_s(playerNames[playerCount], MAXUSERNAME, playerName);
+        playerScores[playerCount] = playerScore;
+        playerCount++;
 
         printf("\nDo you want to end the quiz? (1 for Yes, 0 for No): ");
         scanf_s("%d", &Quizover);
     }
 
     printf("\nFinal Results:\n");
+    for (int i = 0; i < playerCount; i++) {
+        printf("Player: %s, Score: %d/5\n", players[i].name, players[i].score);
+    }
 
-        for (int i = 0; i < playerCount; i++) {
-            printf("Player: %s, Score: %d/5\n", playerNames[i], playerScores[i]);
-        }
-
+    for (int i = 0; i < playerCount; i++) {
+        printf("Player: %s, Score: %d/5\n", playerNames[i], playerScores[i]);
+    }
 
     return 0;
 }
