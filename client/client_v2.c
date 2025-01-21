@@ -108,12 +108,12 @@ uint8_t germanQuiz(uint8_t playerScore) {
 int main() {
     char testSubject, Answer;
     uint8_t PlayerScore;
-    int Quizover = 1;
+    int Quizover = 0;
     char playerName[MAXUSERNAME];
     int playerCount = 0;
     Player players[32];
 
-    while (Quizover) {
+    while (!Quizover) {
         uint8_t playerScore = 0;
 
         printf("\nPlease enter your name: ");
