@@ -81,3 +81,23 @@ Bool check_user_answer(UserAnswer* answer) {
     answer->score = 100;
     return TRUE;
 }
+
+Response decode_response(uint8_t byte) {
+    Response header;
+    header.version = (byte & 0xE0) >> 5;  // Extract the first 3 bits
+    header.answer = (byte & 0x1C) >> 2;   // Extract the next 3 bits
+    return header;
+}
+
+void print_users_table(User* users, size_t user_count) {
+    printf("+-----+-----------------+-------+\n");
+    printf("| UID | Username        | Score |\n");
+    printf("+-----+-----------------+-------+\n");
+
+    for (size_t i = 0; i < user_count; ++i) {
+        printf("| %-3d | %-15s | %-5d |\n", users[i].uid, users[i].uname,
+               users[i].score);
+    }
+
+    printf("+-----+-----------------+-------+\n");
+}

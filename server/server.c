@@ -21,28 +21,23 @@
 int server_fd, new_socket;
 unsigned char players_no = 0;
 time_t game_start;
-uint8_t NEXT_UID = 1;
+uint8_t NEXT_UID = 0;
+User *users;
 
-typedef struct {
-    User *user;
-    UserNode *next;
-} UserNode;
+PacketHeader parse_packet_header(uint8_t byte) {
+    PacketHeader header;
+    header.version = (byte & 0xE0) >> 5;
+    header.question = (byte & 0x1C) >> 2;
+    header.padding = byte & 0x03;
+    return header;
+}
 
-UserNode *LAST_USERNODE = NULL;
-
-Error register_user(User *userref) {
-    UserNode *new_user = (UserNode *)malloc(sizeof(UserNode));
-    if (new_user == NULL) {
-        return MALLOCFAIL;
-    }
-
-    new_user->user = userref;
-    new_user->next = NULL;
-
-    if (LAST_USERNODE == NULL) {
-        LAST_USERNODE = new_user;
-    } else {
-        LAST_USERNODE->next = new_user;
+Error send_response(int sockfd, uint8_t version, uint8_t answer) {
+    uint8_t response = (version << 5) | (answer << 2);
+    int res = send(sockfd, &response, sizeof(response), 0);
+    if (res == -1) {
+        perror("send failed");
+        return NETZ_FAIL;
     }
     return OK;
 }
@@ -63,7 +58,7 @@ void handle_shutdown(int sig) {
     exit(EXIT_SUCCESS);
 }
 
-Error handle_question(char buffer, int sockfd);
+Error handle_question(PacketHeader header, int sockfd);
 
 int main(void) {
     // variables initialization
@@ -73,6 +68,7 @@ int main(void) {
     int addrlen = sizeof(address);
     char buffer[BUFFER_SIZE] = {0};
     char *question = "What is 2 + 2?";
+    users = (User *)malloc(sizeof(User) * 32);
 
     /*
      * since the deployment is in Linux, these are the only
@@ -131,7 +127,6 @@ int main(void) {
 
         /* question answer protocol */
         char qu_buffer[1];
-
         unsigned int BYTES_TO_READ = 1;
 
         int bytes_read = recv(new_socket, qu_buffer, BYTES_TO_READ, 0);
@@ -147,7 +142,11 @@ int main(void) {
 
             // few assertions to stay safe
             assert(players_no <= 32);
-            switch (handle_question(qu_buffer[0], new_socket)) {
+
+            // Parse the packet header
+            PacketHeader header = parse_packet_header(qu_buffer[0]);
+
+            switch (handle_question(header, new_socket)) {
                 case OK:
                     continue;
                     break;  // failsafe incase continue did not work!
@@ -158,7 +157,6 @@ int main(void) {
                 }
             }
         }
-
         close(new_socket);
     }
 
@@ -167,55 +165,57 @@ exit:
     exit(EXIT_STATUS);
 }
 
-Error handle_question(char qu, int sockfd) {
-    unsigned char version = (qu & 0xe0) >> 5;
+Error handle_question(PacketHeader header, int sockfd) {
+    unsigned char version = header.version;
     if (version != VERSION) {
         printf("version: %u\n", version);
         puts("unsupported client.");
         return VERSION_MISMATCH;
     }
 
-    unsigned char qu_no = (qu & 0x1c) >> 2;
+    unsigned char qu_no = header.question;
     switch (qu_no) {
         case 1: {
-            puts("register new client...");
-            char *uname = (char *)malloc(256);
+            // recv uname
+            assert(/* only 32 players are allowed */ NEXT_UID < 32);
+
+            char buf[1];
+            int bytes_read = recv(sockfd, buf, 1, 0);
+            size_t uname_len = (size_t)buf[0];
+
+            assert(/*only 255 chars are allowed in the user display name*/
+                   uname_len < 256);
+            printf("%d length of char to be expected\n", (int)uname_len);
+
+            char *uname = (char *)malloc(uname_len);
             User *new_user = (User *)malloc(sizeof(User));
             if (uname == NULL || new_user == NULL) {
                 puts("failed to allocate new memory!");
+                return MALLOCFAIL;
             }
 
-            if (create_user(uname, new_user, &NEXT_UID) != OK &&
-                register_user(new_user) != OK) {
-                puts("something went wrong");
-                break;
-            }
+            bytes_read = recv(sockfd, uname, uname_len, 0);
+            *(uname + uname_len) = '\0';
+
+            puts("register new client...");
+
+            new_user->score = -1;
+            new_user->uname = uname;
+            new_user->uid = NEXT_UID;
+            *(users + NEXT_UID) = *new_user;
+            NEXT_UID++;
 
             puts("new client registered!");
             printf("latest uid %d\n", new_user->uid);
 
-            unsigned char ans = VERSION << 5;
-            ans = ans | new_user->uid;
-            break;
+            puts("current users table...");
+            print_users_table(users, 1);
+
+            return send_response(sockfd, VERSION, new_user->uid);
         }
         case 2: {
             puts("checkup...");
-
-            unsigned char ans = VERSION << 5;
-            ans = ans | players_no;
-            int _res = send(sockfd, &ans, sizeof(ans), 0);
-            if (_res == -1) {
-                return NETZ_FAIL;
-            }
-
-            printf("time send is %lu\n", game_start);
-            switch (send_time(sockfd, game_start)) {
-                case OK:
-                    break;
-                default:
-                    return NETZ_FAIL;
-            }
-            break;
+            return send_response(sockfd, VERSION, players_no);
         }
         default: {
             puts("unsupported question");

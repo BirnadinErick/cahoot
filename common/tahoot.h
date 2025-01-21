@@ -19,6 +19,17 @@ typedef enum {
 /* own boolean contructs.*/
 typedef enum { TRUE = 0, FALSE } Bool;
 
+typedef struct {
+    uint8_t version;
+    uint8_t question;
+    uint8_t padding;
+} PacketHeader;
+
+typedef struct {
+    uint8_t version;
+    uint8_t answer;
+} Response;
+
 /* send given timestamp in a network agnostic way */
 Error send_time(int socket_fd, time_t _time);
 
@@ -85,8 +96,8 @@ typedef struct {
     uint8_t score;  // score of the user
 } User;
 
-// creates a new user
-Error create_user(char* uname, User* userref, uint8_t* nextuid);
-
 // request server to register new user
 Error request_register(char* uname);
+
+Response decode_response(uint8_t byte);
+void print_users_table(User* users, size_t user_count);
