@@ -144,6 +144,7 @@ int main() {
         strcpy_s(name, MAXUSERNAME, playerName);
         Player _player = {.name = name, .score = playerScore};
         players[playerCount] = _player;
+        playerCount++;
 
         printf("\nDo you want to end the quiz? (1 for Yes, 0 for No): ");
         scanf_s("%d", &Quizover);
