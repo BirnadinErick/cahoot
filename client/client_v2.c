@@ -6,36 +6,6 @@
 #define MAXUSERNAME 50
 #define maxPLayers 100
 
-struct Player {
-    char* player_name;
-    uint8_t player_score;
-    Player* next_player;
-};
-typedef struct Player Player;
-
-void add_new_player(Player* HEAD, char* player_name, uint8_t player_score) {
-    Player* player = (Player*)malloc(sizeof(Player));
-    if (player == NULL) {
-        puts(
-            "OS denied to allocate new memory. Plz go discipline your OS");
-        exit(EXIT_FAILURE);
-    }
-
-    strcpy_s(player->player_name, MAXUSERNAME, playerName);
-    player->player_score = playerScore;
-    player->next_player = NULL;
-    if (players_list == NULL) {
-        players_list = player;
-        return;
-    }
-
-    while (HEAD != NULL) {
-        HEAD = HEAD->next_player;
-    }
-    HEAD->next_player = player;
-    return;
-}
-
 int checkAnswer(char answer, char ref_answer, uint8_t playerCurrScore) {
     if (answer != ref_answer) {
         printf("Wrong answer dummy");
@@ -130,10 +100,7 @@ uint8_t germanQuiz(uint8_t playerScore) {
     return playerScore;
 }
 
-void print_scoreboard() {}
-
 int main() {
-    Player* players_list = NULL;
     char testSubject, Answer;
     uint8_t PlayerScore;
     char Quizover = '1';
@@ -149,7 +116,7 @@ int main() {
         scanf_s("%s", playerName, MAXUSERNAME);
 
         printf("Hello %s, which of the two quizzes would you like to take?",
-               playerName);
+            playerName);
     quiz_start:
         puts("For a German quiz, please enter the character 'G'");
         puts("For a Geography quiz please enter the character 'E'");
@@ -162,38 +129,32 @@ int main() {
 
         if (testSubject == 'G' || testSubject == 'g') {
             playerScore = germanQuiz(playerScore);
-        } else if (testSubject == 'E' || testSubject == 'e') {
+        }
+        else if (testSubject == 'E' || testSubject == 'e') {
             playerScore = geographyQuiz(playerScore);
-        } else {
+        }
+        else {
             puts(" **You have entered invalid data**, reenter!.");
             goto quiz_start;
         }
 
-/*
-        strcpy_s(playerNames[playerCount], MAXUSERNAME, playerName);
-        playerScores[playerCount] = playerScore;
-        playerCount++;
-*/
+        
+                strcpy_s(playerNames[playerCount], MAXUSERNAME, playerName);
+                playerScores[playerCount] = playerScore;
+                playerCount++;
 
-        add_new_player(players_list, playerName, playerScore);
 
-        print_scoreboard();
 
         printf("\nDo you want to end the quiz? (1 for Yes, 0 for No): ");
         scanf_s("%d", &Quizover);
     }
 
     printf("\nFinal Results:\n");
-    Player * HEAD = players_list;
-    while (HEAD != NULL) {
-        printf("Player: %s, Score: %d/5\n", HEAD->player_name, HEAD->player_score);
-        HEAD = HEAD->next_player;
-    }
-/*
-    for (int i = 0; i < playerCount; i++) {
-        printf("Player: %s, Score: %d/5\n", playerNames[i], playerScores[i]);
-    }
-*/
+
+        for (int i = 0; i < playerCount; i++) {
+            printf("Player: %s, Score: %d/5\n", playerNames[i], playerScores[i]);
+        }
+
 
     return 0;
 }
